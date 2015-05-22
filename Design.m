@@ -84,6 +84,7 @@ plot(t,y);
 %% Task 3C
 % We can plot overshoot percentage and settling time as a function of Ka,
 % and analyze the optiomal Ka for the system
+
 overshoot = [];
 settlingTime = [];
 maxError = [];
@@ -124,6 +125,7 @@ plot(n,maxError);xlabel('Ka');ylabel('Maximum Error of Disturbance');
 % Settling Time, Overshoot and disturbance.
 % We can find the candidate that sastisfies all three constraints by finding the
 % overlap of Ka and Kh values that satisfies three contraints.
+
 [KaRange, KhRange] = meshgrid(55:65, 0:0.01:0.1);
 overshootMatrix = [];
 settlingTimeMatrix = [];
@@ -161,9 +163,15 @@ candidatePairs
 Ka = 60; Kh = 0.03;
 CLTF = (Ka*G12)/(1+Ka*(1+Kh*s)*G12);
 y = step(CLTF, t);
+figure(6);
+plot(t,y);title('System Step Response');
 info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02)
+
+
 Tw = G2/(1+Ka*(1+Kh*s)*G12);
 y = step(Tw,t);
+figure(7);
+plot(t,y);title('System Step Disturbance Response');
 maxDisturbance = max(y)
 
 %%
