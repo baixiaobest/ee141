@@ -66,7 +66,7 @@ plot(t,y);
 % flows into system between G1 and G2.
 % So that we can derive the transfer function for disturbance:
 %
-% $$Tw = \frac{G2(s)}{1+Ka*G1(s)}$$
+% $$Tw = \frac{G2(s)}{1+Ka*G1(s)*G2(s)}$$
 %
 % First plot the response of disturbance in case of Ka = 50
 Ka = 50;
@@ -178,4 +178,86 @@ maxDisturbance = max(y)
 % So all of the contraints are satisfied.
 
 %% Task 5
+% So now the closed loop transfer function becomes
+%
+% $$CLTF = \frac{F(s)G1(s)G2(s)}{1+F(s)G1(s)G2(s)}$$
+%
+% where $$F(s)=K1+K3s$$
+%
+% we can applied the same precedure as previouse task and get the 3-D graph
+% of constraints we are evaluating.
+%
+% we look at settling time first.
+openfig('K1-K3 settling time 100x40.fig');
+%%
+% You can see that when K1 is around 100 and K2 is around 5 to 10, settling
+% time is satisfied, then we may take a closer look.
+openfig('K1-K3 settling time [95,105]x[1,10].fig');
+%%
+% So there are couples of K1 K3 pair meet the settling time reqirement,
+% take K1=100 and K3=5 for example, it is under 250ms.
+% We can also evaluate overshoot around this area.
+openfig('K1-K3 overshoot [95,105]x[5,10].fig');
+%%
+% Observe that K1,K3 = [100 5] has no apparent overshoot.
+% Then we examine the disturbance of this area.
+openfig('K1-K3 disturbance [95,105]x[5,10].fig');
+%%
+% You can see that disturbance of K1,K3=[95, 100] meet the requirement.
+%
+% The following is the code to generate graph.
 
+
+% [K1Range K3Range] = meshgrid(95:105, 5:10);
+% overshootMatrix = [];
+% settlingTimeMatrix = [];
+% disturbanceMatrix=[];
+% candidatePairs = [];
+% t=[0:0.2:15];
+% G12= G1*G2;
+% for K3 = K3Range(:,1)'
+%     overshootArr=[];
+%     settlingTimeArr=[];
+%     disturbanceArr=[];
+%     for K1 = K1Range(1,:)
+%         CLTF = ((K1+K3*s)*G12)/(1+(K1+K3*s)*G12);
+%         y = step(CLTF, t);
+%         info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02);
+%         overshootArr = [overshootArr, info.Overshoot];
+%         settlingTimeArr = [settlingTimeArr, info.SettlingTime];
+%         
+%         Tw = G2/(1+(K1+K3*s)*G12);
+%         y = step(Tw,t);
+%         maxDisturbance = max(y);
+%         disturbanceArr = [disturbanceArr, maxDisturbance];
+%         
+%         if(info.Overshoot <= 5 & info.SettlingTime <0.25 & y<0.005)
+%             candidatePairs = [candidatePairs; Ka, Kh];
+%         end
+%     end
+%     overshootMatrix = [overshootMatrix; overshootArr];
+%     settlingTimeMatrix = [settlingTimeMatrix; settlingTimeArr];
+%     disturbanceMatrix = [disturbanceMatrix; disturbanceArr];
+% end
+
+%mesh(K1Range, K3Range, overshootMatrix);xlabel('K1');ylabel('K3');zlabel('Overshoot')
+%mesh(K1Range, K3Range, settlingTimeMatrix);xlabel('K1');ylabel('K3');zlabel('SettlingTime')
+%mesh(K1Range, K3Range,disturbanceMatrix);xlabel('K1');ylabel('K3');zlabel('Disturbance');view(35,30);
+%candidatePairs
+
+%%
+% We can take K1=100 and K3=5, and evaluete it more quantatively.
+K1=100; K3=5;
+CLTF = ((K1+K3*s)*G12)/(1+(K1+K3*s)*G12);
+y = step(CLTF, t);
+info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02)
+plot(t,y);
+
+%%
+% We see that there is no overshoot because the K3 term acts as a damping
+% factor that prevents the response from overshooting.
+Tw = G2/(1+(K1+K3*s)*G12);
+y = step(Tw,t);
+plot(t,y);
+%%
+% The disturbance only reaches 2e-3.
