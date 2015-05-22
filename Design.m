@@ -84,37 +84,62 @@ plot(t,y);
 %% Task 3C
 % We can plot overshoot percentage and settling time as a function of Ka,
 % and analyze the optiomal Ka for the system
-overshoot = [];
-settlingTime = [];
-maxError = [];
-n=[1:100];
-for  Ka=n
-    ProportionalTF = (Ka*openTF)/(1+Ka*openTF);
-    y = step(ProportionalTF, t);
-    info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02);
-    overshoot = [overshoot, info.Overshoot];
-    settlingTime = [settlingTime info.SettlingTime];
-    
-    Tw = G2/(1+Ka*G1*G2);
-    y = step(Tw, t);
-    maxError = [maxError max(y)];
-end
-subplot(3,1,1);
-plot(n,overshoot);xlabel('Ka');ylabel('Overshoot Percentage');
-subplot(3,1,2);
-plot(n,settlingTime);xlabel('Ka');ylabel('Settling Time');
-subplot(3,1,3);
-plot(n,maxError);xlabel('Ka');ylabel('Maximum Error of Disturbance');
+% overshoot = [];
+% settlingTime = [];
+% maxError = [];
+% n=[1:100];
+%t=[0:0.005:1.5];
+% for  Ka=n
+%     ProportionalTF = (Ka*openTF)/(1+Ka*openTF);
+%     y = step(ProportionalTF, t);
+%     info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02);
+%     overshoot = [overshoot, info.Overshoot];
+%     settlingTime = [settlingTime info.SettlingTime];
+%     
+%     Tw = G2/(1+Ka*G1*G2);
+%     y = step(Tw, t);
+%     maxError = [maxError max(y)];
+% end
+% subplot(3,1,1);
+% plot(n,overshoot);xlabel('Ka');ylabel('Overshoot Percentage');
+% subplot(3,1,2);
+% plot(n,settlingTime);xlabel('Ka');ylabel('Settling Time');
+% subplot(3,1,3);
+% plot(n,maxError);xlabel('Ka');ylabel('Maximum Error of Disturbance');
 
 %%
-% for overshoot less than 5%, Ka is required to be equal or less than 41
-% Ka value that satisfy settling time less than 250ms is too big and is not
-% in the graph
-% for disturbance less than 0.005, Ka is required to be equal or bigger than 41
-% Clearly, you cannot satisfy both requirement at the same time.
+% For overshoot less than 5%, Ka is required to be equal or less than 41,
+% Ka value that satisfy settling time requirement is more than 100 and is not
+% in the graph.
+% For disturbance less than 0.005, Ka is required to be equal or bigger than 41
+% Clearly, you cannot satisfy three requirements at the same time.
 
 %% Task 4
 % The closed loop transfer function in this case would be
 %
 % $$frac{KaG1(s)G2(s)}{1+KaH(s)G1(s)G2(s)}$$
 %
+[KaRange, KhRange] = meshgrid(40:60, 0:0.01:0.1);
+overshootMatrix = [];
+settlingTimeMatrix = [];
+candidatePairs = [];
+t=[0:0.005:1.5];
+for Kh = KhRange(:,1)'
+    overshootArr=[];
+    settlingTimeArr=[];
+    for Ka = KaRange(1,:)
+        CLTF = (Ka*G1*G2)/(1+Ka*(1+Kh*s)*G1*G2);
+        y = step(CLTF, t);
+        info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02);
+        overshootArr = [overshootArr, info.Overshoot];
+        %settlingTimeArr = [settlingTimeArr, info.SettlingTime];
+        %if(info.Overshoot <= 5 & info.SettlingTime <0.25)
+            %candidatePairs = [candidatePairs; Ka, Kh];
+        %end
+    end
+    overshootMatrix = [overshootMatrix; overshootArr];
+    %settlingTimeMatrix = [settlingTimeMatrix; settlingTimeArr];
+end
+%mesh(KaRange, KhRange, settlingTimeMatrix);
+mesh(KaRange, KhRange, overshootMatrix);
+%candidatePairs
