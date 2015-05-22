@@ -84,28 +84,28 @@ plot(t,y);
 %% Task 3C
 % We can plot overshoot percentage and settling time as a function of Ka,
 % and analyze the optiomal Ka for the system
-% overshoot = [];
-% settlingTime = [];
-% maxError = [];
-% n=[1:100];
-%t=[0:0.005:1.5];
-% for  Ka=n
-%     ProportionalTF = (Ka*openTF)/(1+Ka*openTF);
-%     y = step(ProportionalTF, t);
-%     info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02);
-%     overshoot = [overshoot, info.Overshoot];
-%     settlingTime = [settlingTime info.SettlingTime];
-%     
-%     Tw = G2/(1+Ka*G1*G2);
-%     y = step(Tw, t);
-%     maxError = [maxError max(y)];
-% end
-% subplot(3,1,1);
-% plot(n,overshoot);xlabel('Ka');ylabel('Overshoot Percentage');
-% subplot(3,1,2);
-% plot(n,settlingTime);xlabel('Ka');ylabel('Settling Time');
-% subplot(3,1,3);
-% plot(n,maxError);xlabel('Ka');ylabel('Maximum Error of Disturbance');
+overshoot = [];
+settlingTime = [];
+maxError = [];
+n=[1:100];
+t=[0:0.05:0.8];
+for  Ka=n
+    ProportionalTF = (Ka*openTF)/(1+Ka*openTF);
+    y = step(ProportionalTF, t);
+    info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02);
+    overshoot = [overshoot, info.Overshoot];
+    settlingTime = [settlingTime info.SettlingTime];
+    
+    Tw = G2/(1+Ka*G1*G2);
+    y = step(Tw, t);
+    maxError = [maxError max(y)];
+end
+subplot(3,1,1);
+plot(n,overshoot);xlabel('Ka');ylabel('Overshoot Percentage');
+subplot(3,1,2);
+plot(n,settlingTime);xlabel('Ka');ylabel('Settling Time');
+subplot(3,1,3);
+plot(n,maxError);xlabel('Ka');ylabel('Maximum Error of Disturbance');
 
 %%
 % For overshoot less than 5%, Ka is required to be equal or less than 41,
@@ -117,29 +117,57 @@ plot(t,y);
 %% Task 4
 % The closed loop transfer function in this case would be
 %
-% $$frac{KaG1(s)G2(s)}{1+KaH(s)G1(s)G2(s)}$$
+% $$\frac{KaG1(s)G2(s)}{1+KaH(s)G1(s)G2(s)}$$
 %
-[KaRange, KhRange] = meshgrid(40:60, 0:0.01:0.1);
+% So both Ka and Kh are varying, so we can plot a 3-D graph in which x aixs
+% is Ka and Y axis is Kh and Z axis is the property under examination like
+% Settling Time, Overshoot and disturbance.
+% We can find the candidate that sastisfies all three constraints by finding the
+% overlap of Ka and Kh values that satisfies three contraints.
+[KaRange, KhRange] = meshgrid(55:65, 0:0.01:0.1);
 overshootMatrix = [];
 settlingTimeMatrix = [];
 candidatePairs = [];
-t=[0:0.005:1.5];
+t=[0:0.05:0.8];
+G12= G1*G2;
 for Kh = KhRange(:,1)'
-    overshootArr=[];
-    settlingTimeArr=[];
+    %overshootArr=[];
+    %settlingTimeArr=[];
     for Ka = KaRange(1,:)
-        CLTF = (Ka*G1*G2)/(1+Ka*(1+Kh*s)*G1*G2);
+        CLTF = (Ka*G12)/(1+Ka*(1+Kh*s)*G12);
         y = step(CLTF, t);
         info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02);
-        overshootArr = [overshootArr, info.Overshoot];
+        %overshootArr = [overshootArr, info.Overshoot];
         %settlingTimeArr = [settlingTimeArr, info.SettlingTime];
-        %if(info.Overshoot <= 5 & info.SettlingTime <0.25)
-            %candidatePairs = [candidatePairs; Ka, Kh];
-        %end
+        Tw = G2/(1+Ka*(1+Kh*s)*G12);
+        y = step(Tw,t);
+        maxDisturbance = max(y);
+        
+        if(info.Overshoot <= 5 & info.SettlingTime <0.25 & y<0.005)
+            candidatePairs = [candidatePairs; Ka, Kh];
+        end
     end
-    overshootMatrix = [overshootMatrix; overshootArr];
+    %overshootMatrix = [overshootMatrix; overshootArr];
     %settlingTimeMatrix = [settlingTimeMatrix; settlingTimeArr];
 end
 %mesh(KaRange, KhRange, settlingTimeMatrix);
-mesh(KaRange, KhRange, overshootMatrix);
-%candidatePairs
+%mesh(KaRange, KhRange, overshootMatrix);
+candidatePairs
+
+%%
+% We can see that there are bunch of valid pair of Ka and Kh that satisfies
+% the design, we can select Ka = 60 and Kh = 0.03 to examine.
+
+Ka = 60; Kh = 0.03;
+CLTF = (Ka*G12)/(1+Ka*(1+Kh*s)*G12);
+y = step(CLTF, t);
+info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02)
+Tw = G2/(1+Ka*(1+Kh*s)*G12);
+y = step(Tw,t);
+maxDisturbance = max(y)
+
+%%
+% So all of the contraints are satisfied.
+
+%% Task 5
+
