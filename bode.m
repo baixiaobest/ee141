@@ -12,7 +12,7 @@ open_sys = Ka * G1*G2; %OLTF
 figure;
 step(open_sys);
 title('OLTF step response');
-Td = G2/(1+Ka * G1); %CLTF of disturbance 
+Td = G2/(1+Ka * G1* G2); %CLTF of disturbance 
 Ts = open_sys/(1+ open_sys); % CLTF of reference 
 figure;
 step(Ts); %3Azero disturbance
