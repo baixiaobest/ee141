@@ -1,3 +1,6 @@
+New Issue:
+You may get more informative plot by setting the range of plot in Task 1 to [0,1.0].
+
 Right now the Task 3B is under progress, You guys need to check the correctness
 of previous Taks. Task 3B is for sure not correct.
 
