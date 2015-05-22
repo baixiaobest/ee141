@@ -82,11 +82,10 @@ y = step(Tw, t);
 plot(t,y);
 
 %% Task 3C
-% We can plot overshoot percentage and settling time as a function of Ka,
-% and analyze the optiomal Ka for the system
+
 overshoot = [];
 settlingTime = [];
-n=[1:50];
+n=[0:10];
 for  Ka=n
     ProportionalTF = (Ka*openTF)/(1+Ka*openTF);
     y = step(ProportionalTF, t);
@@ -95,9 +94,6 @@ for  Ka=n
     settlingTime = [settlingTime info.SettlingTime];
 end
 subplot(2,1,1);
-plot(n,overshoot);xlabel('Ka');ylabel('Overshoot Percentage');
+plot(n,overshoot);xlabel('Ka');xlabel('Overshoot Percentage');
 subplot(2,1,2);
 plot(n,settlingTime);xlabel('Ka');ylabel('Settling Time');
-
-%%
-% Clearly, you cannot satisfy both requirement at the same time.
