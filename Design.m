@@ -86,18 +86,35 @@ plot(t,y);
 % and analyze the optiomal Ka for the system
 overshoot = [];
 settlingTime = [];
-n=[1:50];
+maxError = [];
+n=[1:100];
 for  Ka=n
     ProportionalTF = (Ka*openTF)/(1+Ka*openTF);
     y = step(ProportionalTF, t);
     info = stepinfo(y, t, 'SettlingTimeThreshold', 0.02);
     overshoot = [overshoot, info.Overshoot];
     settlingTime = [settlingTime info.SettlingTime];
+    
+    Tw = G2/(1+Ka*G1*G2);
+    y = step(Tw, t);
+    maxError = [maxError max(y)];
 end
-subplot(2,1,1);
+subplot(3,1,1);
 plot(n,overshoot);xlabel('Ka');ylabel('Overshoot Percentage');
-subplot(2,1,2);
+subplot(3,1,2);
 plot(n,settlingTime);xlabel('Ka');ylabel('Settling Time');
+subplot(3,1,3);
+plot(n,maxError);xlabel('Ka');ylabel('Maximum Error of Disturbance');
 
 %%
+% for overshoot less than 5%, Ka is required to be equal or less than 41
+% Ka value that satisfy settling time less than 250ms is too big and is not
+% in the graph
+% for disturbance less than 0.005, Ka is required to be equal or bigger than 41
 % Clearly, you cannot satisfy both requirement at the same time.
+
+%% Task 4
+% The closed loop transfer function in this case would be
+%
+% $$frac{KaG1(s)G2(s)}{1+KaH(s)G1(s)G2(s)}$$
+%
