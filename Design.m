@@ -279,7 +279,7 @@ plot(t,y);
 %% Task 6B
 % The closed loop transfer function becomes
 %
-% \frac{F(s)G1(s)G2(s)G3(s)}{1+F(s)G1(s)G2(s)G3(s)}
+% $$\frac{F(s)G1(s)G2(s)G3(s)}{1+F(s)G1(s)G2(s)G3(s)}$$
 %
 % Where $$F(s)=K1+K3s$$
 %
